@@ -3,7 +3,29 @@
 @import "~milligram/dist/milligram";
 
 .column > p {
-    padding-top: 10ex;
     text-align: center;
 }
 
+.tile {
+    height: 50px;
+    margin: 10px;
+    border-radius: .4rem;
+}
+
+.hidden {
+    background-color: #9b4dca;
+    border: 0.1rem solid #9b4dca;
+}
+
+.shown {
+    background-color: #3e9bf2;
+    border: 0.1rem solid #3e9bf2;
+    color: white;
+    line-height: 50px;
+    text-align: center;
+    font-weight: 900;
+}
+
+.score {
+    width: 10rem;
+}
