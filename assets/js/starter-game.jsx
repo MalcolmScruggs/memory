@@ -13,10 +13,14 @@ class Starter extends React.Component {
     }
 
     /*
-     board: [{ val: "A"
-     state: { hidden, guessed, correct } }]
+    State:
+     board: [{
+        val: "A",
+        status: { hidden, guessed, correct },
+        index: 123 }]
      lastGuessed: tile
-     score:
+     score: 123
+     wait: bool
      */
 
     static shuffle(array) {
