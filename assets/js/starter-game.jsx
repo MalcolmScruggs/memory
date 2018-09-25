@@ -101,7 +101,6 @@ class Starter extends React.Component {
                 <div className="row">
                     {restart}
                 </div>
-                <button onClick={() => console.log(this.state.board)}>Print State</button>
             </div>
         );
     }
