@@ -49,21 +49,27 @@ class Starter extends React.Component {
         let lastGuessed = this.state.lastGuessed;
         let newBoard = this.state.board.slice();
         if (lastGuessed === null) { //first part of guess
-            newBoard[tile.index].status = Status.GUESSED;
+            tile.status = Status.GUESSED;
+            newBoard[tile.index] = tile;
             this.setState({lastGuessed: tile, board: newBoard});
         } else if (lastGuessed.val === tile.val) { //correct guess
-            newBoard[tile.index].status = Status.CORRECT;
-            newBoard[lastGuessed.index].status = Status.CORRECT;
+            tile.status = Status.CORRECT;
+            lastGuessed.status = Status.CORRECT;
+            newBoard[tile.index] = tile;
+            newBoard[lastGuessed.index] = lastGuessed;
             let score = this.state.score + 10;
             this.setState({lastGuessed: null, board: newBoard, score: score});
         } else { //incorrect guess
-            newBoard[tile.index].status = Status.GUESSED;
+            tile.status = Status.GUESSED;
+            newBoard[tile.index] = tile;
             let score = this.state.score - 1;
             this.setState({board: newBoard, wait: true, score: score});
             this.sleep(800).then(() => {
+                tile.status = Status.HIDDEN;
+                lastGuessed.status = Status.HIDDEN;
                 let newBoard = this.state.board.slice();
-                newBoard[tile.index].satus = Status.HIDDEN;
-                newBoard[lastGuessed.index].status = Status.HIDDEN;
+                newBoard[tile.index] = tile;
+                newBoard[lastGuessed.index] = lastGuessed;
                 this.setState({lastGuessed: null, board: newBoard, wait: false});
             });
         }
