@@ -13,7 +13,7 @@ class Starter extends React.Component {
     }
 
     /*
-    State:
+    State model:
      board: [{
         val: "A",
         status: { hidden, guessed, correct },
@@ -23,17 +23,9 @@ class Starter extends React.Component {
      wait: bool
      */
 
-    static shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            let j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
     setupGame() {
         let boardPeices = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-        boardPeices = Starter.shuffle(boardPeices.concat(boardPeices));
+        boardPeices = _.shuffle(boardPeices.concat(boardPeices));
         let board = [];
         boardPeices.forEach((item, i) => board.push({
             val: item,
@@ -50,43 +42,34 @@ class Starter extends React.Component {
 
     restart() { this.setState(this.setupGame()); }
 
-    sleep(milliseconds) {
-        return new Promise(resolve => setTimeout(resolve, milliseconds))
-    };
+    sleep(milliseconds) { return new Promise(resolve => setTimeout(resolve, milliseconds)) };
 
     clickTile(tile) { //only bound to hidden tiles
         if (this.state.wait === true) { return; }
         let lastGuessed = this.state.lastGuessed;
         let newBoard = this.state.board.slice();
         if (lastGuessed === null) { //first part of guess
-            tile.status = Status.GUESSED;
-            newBoard[tile.index] = tile;
+            newBoard[tile.index].status = Status.GUESSED;
             this.setState({lastGuessed: tile, board: newBoard});
         } else if (lastGuessed.val === tile.val) { //correct guess
-            tile.status = Status.CORRECT;
-            lastGuessed.status = Status.CORRECT;
-            newBoard[tile.index] = tile;
-            newBoard[lastGuessed.index] = lastGuessed;
+            newBoard[tile.index].status = Status.CORRECT;
+            newBoard[lastGuessed.index].status = Status.CORRECT;
             let score = this.state.score + 10;
             this.setState({lastGuessed: null, board: newBoard, score: score});
         } else { //incorrect guess
-            tile.status = Status.GUESSED;
-            newBoard[tile.index] = tile;
+            newBoard[tile.index].status = Status.GUESSED;
             let score = this.state.score - 1;
             this.setState({board: newBoard, wait: true, score: score});
             this.sleep(800).then(() => {
-                tile.status = Status.HIDDEN;
-                lastGuessed.status = Status.HIDDEN;
                 let newBoard = this.state.board.slice();
-                newBoard[tile.index] = tile;
-                newBoard[lastGuessed.index] = lastGuessed;
+                newBoard[tile.index].satus = Status.HIDDEN;
+                newBoard[lastGuessed.index].status = Status.HIDDEN;
                 this.setState({lastGuessed: null, board: newBoard, wait: false});
             });
         }
     }
 
     render() {
-
         let restart = <div className="column" >
             <p>
                 <button onClick={this.restart.bind(this)}>Restart</button>
@@ -112,6 +95,7 @@ class Starter extends React.Component {
                 <div className="row">
                     {restart}
                 </div>
+                <button onClick={() => console.log(this.state.board)}>Print State</button>
             </div>
         );
     }
@@ -126,9 +110,7 @@ const Status = Object.freeze({
 function Tile(props) {
     let tile = props.tile;
     if (tile.status === Status.HIDDEN) {
-        return(
-            <div className="column tile hidden" onClick={() => props.clickTile(tile)}/>
-        );
+        return <div className="column tile hidden" onClick={() => props.clickTile(tile)}/>;
     } else {
         return(
             <div className="column tile shown">
@@ -138,4 +120,3 @@ function Tile(props) {
     }
 
 }
-
