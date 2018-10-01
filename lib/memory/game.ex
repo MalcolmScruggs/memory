@@ -1,7 +1,5 @@
 defmodule Memory.Game do
 
-  require Logger
-
   def new do
     b = ["A", "B", "C", "D", "E", "F", "G", "H"]
     b = b ++ b
@@ -9,9 +7,6 @@ defmodule Memory.Game do
     g = Enum.map 1..16, fn _ ->
       false
     end
-    Logger.error "HERE IN NEWWW"
-    Logger.error is_list(b)
-    Logger.error elem(Enum.fetch(b, 0), 1)
     %{
       board: b,
       guessBoard: g,
@@ -21,13 +16,8 @@ defmodule Memory.Game do
   end
 
   def client_view(game) do
-    s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2) #todo refactoring into methods
-    b = Enum.map 0..15, fn i ->
-      cond do
-        MapSet.member?(game.correct, i) -> elem(Enum.fetch(game.board, i), 1)
-        true -> false
-      end
-    end
+    s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2)
+    b = calcClientBoard(game, nil, nil)
     %{
       guessBoard: b,
       score: s,
@@ -37,13 +27,7 @@ defmodule Memory.Game do
 
   def client_preview(game, previewIndex) do
     s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2)
-    b = Enum.map 0..15, fn i ->
-      cond do
-        MapSet.member?(game.correct, i) -> elem(Enum.fetch(game.board, i), 1)
-        i == previewIndex -> elem(Enum.fetch(game.board, i), 1)
-        true -> false
-      end
-    end
+    b = calcClientBoard(game, previewIndex, nil)
     %{
       guessBoard: b,
       score: s,
@@ -53,13 +37,7 @@ defmodule Memory.Game do
 
   def client_preview(game, previewIndex, previewIndex2) do
     s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2)
-    b = Enum.map 0..15, fn i ->
-      cond do
-        MapSet.member?(game.correct, i) -> elem(Enum.fetch(game.board, i), 1)
-        i == previewIndex || i == previewIndex2 -> elem(Enum.fetch(game.board, i), 1)
-        true -> false
-      end
-    end
+    b = calcClientBoard(game, previewIndex, previewIndex2)
     %{
       guessBoard: b,
       score: s,
@@ -84,5 +62,19 @@ defmodule Memory.Game do
         w = w + 1
         Map.put(game, :wrongs, w)
     end
+  end
+
+  def calcClientBoard(game, i1, i2) do
+    Enum.map 0..15, fn i ->
+      cond do
+        MapSet.member?(game.correct, i) -> elem(Enum.fetch(game.board, i), 1)
+        i == i1 || i == i2 -> elem(Enum.fetch(game.board, i), 1)
+        true -> false
+      end
+    end
+  end
+
+  def calcScore(game) do
+    (MapSet.size(game.correct) * 10) - (game.wrongs * 2)
   end
 end

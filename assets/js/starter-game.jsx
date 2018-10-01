@@ -15,6 +15,7 @@ class Starter extends React.Component {
             score: 0,
         };
         this.lastGuess = null;
+        this.wait = false;
 
         this.channel.join()
             .receive("ok", this.gotView.bind(this))
@@ -22,25 +23,40 @@ class Starter extends React.Component {
     }
 
     gotView(view) {
-        console.log("new view", view.game);
         this.setState(view.game);
     }
 
     restart() {
+        this.wait = false;
         this.channel.push("restart")
             .receive("ok", this.gotView.bind(this));
+    }
+
+    makeGuess(view) {
+        let prevScore = this.state.score;
+        this.gotView(view);
+        if (this.state.score < prevScore) {
+            this.wait = true;
+            this.sleep(800).then(() => {
+                this.wait = false;
+                this.channel.push("getView")
+                    .receive("ok", this.gotView.bind(this));
+
+            })
+        }
     }
 
     sleep(milliseconds) { return new Promise(resolve => setTimeout(resolve, milliseconds)) };
 
     clickTile(index) { //only bound to hidden tiles
+        if (this.wait) { return; }
         if (this.lastGuess === null) {
             this.lastGuess = index;
             this.channel.push("preview", {index1: index})
                 .receive("ok", this.gotView.bind(this));
         } else {
             this.channel.push("guess", {index1: this.lastGuess, index2: index})
-                .receive("ok", this.gotView.bind(this));
+                .receive("ok", this.makeGuess.bind(this));
             this.lastGuess = null;
         }
     }
