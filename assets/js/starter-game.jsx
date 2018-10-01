@@ -62,7 +62,6 @@ class Starter extends React.Component {
         let board = _.map(rows, (row, i) => {return <div className="row" key={i}>{row}</div>;});
         return (
             <div >
-                <h3>Memory Game</h3>
                 {board}
                 <div className="row">
                     {score}
