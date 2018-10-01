@@ -15,16 +15,56 @@ defmodule Memory.Game do
     %{
       board: b,
       guessBoard: g,
-      wrongs: 0
+      wrongs: 0,
+      correct: MapSet.new()
     }
   end
 
   def client_view(game) do
-#    %{
-#      board: game.guessBoard,
-#      score: game.wrongs
-#    }
-    game
+    s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2) #todo refactoring into methods
+    b = Enum.map 0..15, fn i ->
+      cond do
+        MapSet.member?(game.correct, i) -> elem(Enum.fetch(game.board, i), 1)
+        true -> false
+      end
+    end
+    %{
+      guessBoard: b,
+      score: s,
+      actual: game.board
+    }
+  end
+
+  def client_preview(game, previewIndex) do
+    s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2)
+    b = Enum.map 0..15, fn i ->
+      cond do
+        MapSet.member?(game.correct, i) -> elem(Enum.fetch(game.board, i), 1)
+        i == previewIndex -> elem(Enum.fetch(game.board, i), 1)
+        true -> false
+      end
+    end
+    %{
+      guessBoard: b,
+      score: s,
+      actual: game.board
+    }
+  end
+
+  def client_preview(game, previewIndex, previewIndex2) do
+    s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2)
+    b = Enum.map 0..15, fn i ->
+      cond do
+        MapSet.member?(game.correct, i) -> elem(Enum.fetch(game.board, i), 1)
+        i == previewIndex || i == previewIndex2 -> elem(Enum.fetch(game.board, i), 1)
+        true -> false
+      end
+    end
+    %{
+      guessBoard: b,
+      score: s,
+      actual: game.board
+    }
   end
 
   def guess(game, index1, index2) do
@@ -34,11 +74,11 @@ defmodule Memory.Game do
     cond do
       index1 == index2 ->
         game
-      Enum.fetch(b, index1) == Enum.fetch(b, index2) ->
-        g = game.guessBoard
-        g = List.replace_at(g, index1, let1)
-        g = List.replace_at(g, index2, let2)
-        Map.put(game, :guessBoard, g)
+      let1 == let2 ->
+        c = game.correct
+        |> MapSet.put(index1)
+        |> MapSet.put(index2)
+        Map.put(game, :correct, c)
       true ->
         w = game.wrongs
         w = w + 1

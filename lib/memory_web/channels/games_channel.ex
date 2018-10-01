@@ -16,9 +16,19 @@ defmodule MemoryWeb.GamesChannel do
   end
 
   def handle_in("guess", %{"index1" => i1, "index2" => i2 }, socket) do
-    index1 = elem(Integer.parse(i1), 0)
-    index2 = elem(Integer.parse(i2), 0)
-    game = Game.guess(socket.assigns[:game], index1, index2)
+    game = Game.guess(socket.assigns[:game], i1, i2)
+    socket = assign(socket, :game, game)
+    {:reply, {:ok, %{ "game" => Game.client_preview(game, i1, i2)}}, socket}
+    #todo figure out how to do deplays not with client_preview
+  end
+
+  def handle_in("preview", %{"index1" => i1 }, socket) do
+    game = socket.assigns[:game]
+    {:reply, {:ok, %{ "game" => Game.client_preview(game, i1)}}, socket}
+  end
+
+  def handle_in("restart", socket) do
+    game = Game.new()
     socket = assign(socket, :game, game)
     {:reply, {:ok, %{ "game" => Game.client_view(game)}}, socket}
   end
