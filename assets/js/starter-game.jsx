@@ -2,14 +2,22 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 
-export default function game_init(root) {
-    ReactDOM.render(<Starter />, root);
+export default function game_init(root, channel) {
+    ReactDOM.render(<Starter channel={channel} />, root);
 }
 
 class Starter extends React.Component {
     constructor(props) {
         super(props);
-        this.state = this.setupGame();
+        this.channel = props.channel;
+        this.state = {
+            inputValue: '',
+            inputValue2: ''
+        }
+
+        this.channel.join()
+            .receive("ok", this.gotView.bind(this))
+            .receive("error", resp => { console.log("Unable to join", resp) });
     }
 
     /*
@@ -22,6 +30,9 @@ class Starter extends React.Component {
      score: 123
      wait: bool
      */
+    gotView(view) {
+        console.log("new view", view);
+    }
 
     setupGame() {
         let boardPeices = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -75,35 +86,60 @@ class Starter extends React.Component {
         }
     }
 
-    render() {
-        let restart = <div className="column" >
-            <p>
-                <button onClick={this.restart.bind(this)}>Restart</button>
-            </p>
-        </div>;
-        let score = <div className="score">{'Score: ' + this.state.score}</div>;
-        let rows = [];
-        for (let i = 0; i < this.state.board.length; i++) {
-            if (i % 4 === 0) {
-                rows.unshift([]);
-            }
-            rows[0].push(<Tile tile={this.state.board[i]} clickTile={this.clickTile.bind(this)} key={i} />);
-        }
-        let board = _.map(rows, (row, i) => {return <div className="row" key={i}>{row}</div>;});
-
-        return (
-            <div >
-                <h3>Memory Game</h3>
-                {board}
-                <div className="row">
-                    {score}
-                </div>
-                <div className="row">
-                    {restart}
-                </div>
-            </div>
-        );
+    updateInputValue(evt) {
+        this.setState({
+                          inputValue: evt.target.value
+                      });
     }
+
+    updateInputValue2(evt) {
+        this.setState({
+                          inputValue2: evt.target.value
+                      });
+    }
+
+    guess() {
+        this.channel.push("guess", {index1: this.state.inputValue, index2: this.state.inputValue2})
+            .receive("ok", this.gotView.bind(this));
+    }
+
+    render() {
+        return (
+            <div>
+                <input value={this.state.inputValue} onChange={evt => this.updateInputValue(evt)}/>
+                <input value={this.state.inputValue2} onChange={evt => this.updateInputValue2(evt)}/>
+                <button onClick={this.guess.bind(this)}>Restart</button>
+            </div>
+        )
+    }
+    //    let restart = <div className="column" >
+    //        <p>
+    //            <button onClick={this.restart.bind(this)}>Restart</button>
+    //        </p>
+    //    </div>;
+    //    let score = <div className="score">{'Score: ' + this.state.score}</div>;
+    //    let rows = [];
+    //    for (let i = 0; i < this.state.board.length; i++) {
+    //        if (i % 4 === 0) {
+    //            rows.unshift([]);
+    //        }
+    //        rows[0].push(<Tile tile={this.state.board[i]} clickTile={this.clickTile.bind(this)} key={i} />);
+    //    }
+    //    let board = _.map(rows, (row, i) => {return <div className="row" key={i}>{row}</div>;});
+    //
+    //    return (
+    //        <div >
+    //            <h3>Memory Game</h3>
+    //            {board}
+    //            <div className="row">
+    //                {score}
+    //            </div>
+    //            <div className="row">
+    //                {restart}
+    //            </div>
+    //        </div>
+    //    );
+    //}
 }
 
 const Status = Object.freeze({
