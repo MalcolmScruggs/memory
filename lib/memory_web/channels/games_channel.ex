@@ -23,7 +23,6 @@ defmodule MemoryWeb.GamesChannel do
     socket = assign(socket, :game, game)
     BackupAgent.put(name, game)
     {:reply, {:ok, %{ "game" => Game.client_preview(game, i1, i2)}}, socket}
-    #todo figure out how to do deplays not with client_preview
   end
 
   def handle_in("preview", %{"index1" => i1 }, socket) do

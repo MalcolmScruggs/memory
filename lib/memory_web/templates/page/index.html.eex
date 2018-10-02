@@ -1,6 +1,7 @@
 <div class="row">
   <div class="column">
-    <h1 id="index-page">Join a Game</h1>
-    <p><a href="/game/demo">Join "demo"</a></p>
+    <h1 id="index-page">Join a Memory Game</h1>
+    <label for="gameName">Input game name:</label><input type="text" id="gameName" value="demo"/>
+    <button onClick="window.location = '/game/' + document.getElementById('gameName').value">Join Game</button>
   </div>
 </div>
