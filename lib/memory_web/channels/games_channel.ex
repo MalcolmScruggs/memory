@@ -27,7 +27,7 @@ defmodule MemoryWeb.GamesChannel do
 
   def handle_in("preview", %{"index1" => i1 }, socket) do
     game = socket.assigns[:game]
-    {:reply, {:ok, %{ "game" => Game.client_preview(game, i1)}}, socket}
+    {:reply, {:ok, %{ "game" => Game.client_preview(game, i1, nil)}}, socket}
   end
 
   def handle_in("restart", payload, socket) do

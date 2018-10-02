@@ -16,32 +16,20 @@ defmodule Memory.Game do
   end
 
   def client_view(game) do
-    s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2)
+    s = calcScore(game)
     b = calcClientBoard(game, nil, nil)
     %{
       guessBoard: b,
       score: s,
-      actual: game.board
-    }
-  end
-
-  def client_preview(game, previewIndex) do
-    s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2)
-    b = calcClientBoard(game, previewIndex, nil)
-    %{
-      guessBoard: b,
-      score: s,
-      actual: game.board
     }
   end
 
   def client_preview(game, previewIndex, previewIndex2) do
-    s = (MapSet.size(game.correct) * 10) - (game.wrongs * 2)
+    s = calcScore(game)
     b = calcClientBoard(game, previewIndex, previewIndex2)
     %{
       guessBoard: b,
       score: s,
-      actual: game.board
     }
   end
 
