@@ -30,7 +30,7 @@ defmodule MemoryWeb.GamesChannel do
     {:reply, {:ok, %{ "game" => Game.client_preview(game, i1, nil)}}, socket}
   end
 
-  def handle_in("restart", payload, socket) do
+  def handle_in("restart", _payload, socket) do
     name = socket.assigns[:name]
     game = Game.new()
     socket = assign(socket, :game, game)
@@ -38,7 +38,7 @@ defmodule MemoryWeb.GamesChannel do
     {:reply, {:ok, %{ "game" => Game.client_view(game)}}, socket}
   end
 
-  def handle_in("getView", payload, socket) do
+  def handle_in("getView", _payload, socket) do
     game = socket.assigns[:game]
     {:reply, {:ok, %{ "game" => Game.client_view(game)}}, socket}
   end
