@@ -1,46 +1,36 @@
 defmodule MemoryWeb.GamesChannel do
   use MemoryWeb, :channel
 
-  alias Memory.Game
-  alias Memory.BackupAgent
+  alias Memory.GameServer
 
-  def join("games:" <> name, payload, socket) do
+  def join("games:" <> game, payload, socket) do
     if authorized?(payload) do
-      game = BackupAgent.get(name) || Game.new()
-      socket = socket
-      |> assign(:game, game)
-      |> assign(:name, name)
-      BackupAgent.put(name, game)
-      {:ok, %{"join" => name, "game" => Game.client_view(game)}, socket}
+      socket = assign(socket, :game, game)
+      view = GameServer.view(game, socket.assigns[:user])
+      {:ok, %{"join" => game, "game" => view}, socket}
     else
       {:error, %{reason: "unauthorized"}}
     end
   end
 
   def handle_in("guess", %{"index1" => i1, "index2" => i2 }, socket) do
-    name = socket.assigns[:name]
-    game = Game.guess(socket.assigns[:game], i1, i2)
-    socket = assign(socket, :game, game)
-    BackupAgent.put(name, game)
-    {:reply, {:ok, %{ "game" => Game.client_preview(game, i1, i2)}}, socket}
+    view = GameServer.guess(socket.assigns[:game], socket.assigns[:user], i1, i2)
+    {:reply, {:ok, %{ "game" => view}}, socket}
   end
 
   def handle_in("preview", %{"index1" => i1 }, socket) do
-    game = socket.assigns[:game]
-    {:reply, {:ok, %{ "game" => Game.client_preview(game, i1, nil)}}, socket}
+    view = GameServer.preview(socket.assigns[:game], socket.assigns[:user], i1)
+    {:reply, {:ok, %{ "game" => view}}, socket}
   end
 
   def handle_in("restart", _payload, socket) do
-    name = socket.assigns[:name]
-    game = Game.new()
-    socket = assign(socket, :game, game)
-    BackupAgent.put(name, game)
-    {:reply, {:ok, %{ "game" => Game.client_view(game)}}, socket}
+    view = GameServer.restart(socket.assigns[:game], socket.assigns[:user])
+    {:reply, {:ok, %{ "game" => view}}, socket}
   end
 
   def handle_in("getView", _payload, socket) do
-    game = socket.assigns[:game]
-    {:reply, {:ok, %{ "game" => Game.client_view(game)}}, socket}
+    view = GameServer.view(socket.assigns[:game], socket.assigns[:user])
+    {:reply, {:ok, %{ "game" => view}}, socket}
   end
 
   # Add authorization logic here as required.

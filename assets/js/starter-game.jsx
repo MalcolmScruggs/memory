@@ -23,6 +23,7 @@ class Starter extends React.Component {
     }
 
     gotView(view) {
+        console.log(view);
         this.setState(view.game);
     }
 
@@ -41,7 +42,6 @@ class Starter extends React.Component {
                 this.wait = false;
                 this.channel.push("getView")
                     .receive("ok", this.gotView.bind(this));
-
             })
         }
     }
