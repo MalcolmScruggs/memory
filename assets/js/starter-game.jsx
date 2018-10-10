@@ -13,18 +13,31 @@ class Starter extends React.Component {
         this.state = {
             guessBoard: [],
             score: 0,
+            players: []
         };
         this.lastGuess = null;
         this.wait = false;
+        this.user = "";
 
         this.channel.join()
-            .receive("ok", this.gotView.bind(this))
+            .receive("ok", (m) => {
+                this.user = m.user;
+                this.gotView(m);
+            })
             .receive("error", resp => { console.log("Unable to join", resp) });
+
+        this.channel.on("new:msg", this.gotView.bind(this));
     }
 
     gotView(view) {
         console.log(view);
         this.setState(view.game);
+        if (view.action === "guess") {
+            this.sleep(800).then(() => {
+                this.channel.push("getView")
+                    .receive("ok", this.gotView.bind(this));
+            });
+        }
     }
 
     restart() {
@@ -34,16 +47,7 @@ class Starter extends React.Component {
     }
 
     makeGuess(view) {
-        let prevScore = this.state.score;
         this.gotView(view);
-        if (this.state.score < prevScore) {
-            this.wait = true;
-            this.sleep(800).then(() => {
-                this.wait = false;
-                this.channel.push("getView")
-                    .receive("ok", this.gotView.bind(this));
-            })
-        }
     }
 
     sleep(milliseconds) { return new Promise(resolve => setTimeout(resolve, milliseconds)) };
@@ -68,6 +72,13 @@ class Starter extends React.Component {
                 <button onClick={this.restart.bind(this)}>Restart</button>
             </p>
         </div>;
+        let players = _.map(this.state.players, (player, i) => {
+            return <div className="row" key={i}>
+                Player: {player.name}  Corrects: {player.corrects}  Wrongs: {player.wrongs}
+            </div>
+        });
+        console.log("here");
+        console.log(players);
         let rows = [];
         for (let i = 0; i < this.state.guessBoard.length; i++) {
             if (i % 4 === 0) {
@@ -81,7 +92,9 @@ class Starter extends React.Component {
                 {board}
                 <div className="row">
                     {score}
+                    Current user: {this.user}
                 </div>
+                {players}
                 <div className="row">
                     {restart}
                 </div>

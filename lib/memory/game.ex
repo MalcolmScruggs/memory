@@ -14,13 +14,13 @@ defmodule Memory.Game do
       guessBoard: g,
       wrongs: 0,
       correct: MapSet.new(),
-      players: %{}
+      players: %{},
+      lastTurn: true
     }
   end
 
   def new(players) do
     Logger.info("new players")
-    Logger.info(players)
     players = Enum.map players, fn {name, info} ->
       {name, %{ default_player() | score: info.score || 0 }}
     end
@@ -35,7 +35,6 @@ defmodule Memory.Game do
   end
 
   def client_view(game, user) do
-    Logger.debug inspect(game.players)
     s = calcScore(game)
     b = calcClientBoard(game, nil, nil)
     p = calcPlayers(game)
@@ -43,8 +42,7 @@ defmodule Memory.Game do
       guessBoard: b,
       score: s,
       players: p,
-      praw: game.players,
-      actual: game.board
+      lastTurn: game.lastTurn
     }
   end
 
@@ -55,32 +53,39 @@ defmodule Memory.Game do
     %{
       guessBoard: b,
       score: s,
-      players: p
+      players: p,
+      lastTurn: game.lastTurn
     }
   end
 
   def guess(game, player, index1, index2) do
-    b = game.board
-    let1 = elem(Enum.fetch(b, index1), 1)
-    let2 = elem(Enum.fetch(b, index2), 1)
-    pinfo = Map.get(game.players, player, default_player())
-    cond do
-      index1 == index2 ->
-        game
-      let1 == let2 ->
-        c = game.correct
-        |> MapSet.put(index1)
-        |> MapSet.put(index2)
-        pc = pinfo.corrects + 1;
-        pinfo = %{pinfo | :corrects => pc}
-        Map.put(game, :correct, c)
-        |> Map.update(:players, %{}, &(Map.put(&1, player, pinfo)))
-      true ->
-        w = game.wrongs + 1;
-        pw = pinfo.wrongs + 1;
-        pinfo = %{pinfo | :wrongs => pw}
-        Map.put(game, :wrongs, w)
-        |> Map.update(:players, %{}, &(Map.put(&1, player, pinfo)))
+    if Map.get(game, :lastTurn, true) == player do
+      game
+    else
+      b = game.board
+      let1 = elem(Enum.fetch(b, index1), 1)
+      let2 = elem(Enum.fetch(b, index2), 1)
+      pinfo = Map.get(game.players, player, default_player())
+      cond do
+        index1 == index2 ->
+          Map.update(game, :lastTurn, true, fn _ -> player end)
+        let1 == let2 ->
+          c = game.correct
+          |> MapSet.put(index1)
+          |> MapSet.put(index2)
+          pc = pinfo.corrects + 1;
+          pinfo = %{pinfo | :corrects => pc}
+          Map.put(game, :correct, c)
+          |> Map.update(:players, %{}, &(Map.put(&1, player, pinfo)))
+          |> Map.update(:lastTurn, true, fn _ -> player end)
+        true ->
+          w = game.wrongs + 1;
+          pw = pinfo.wrongs + 1;
+          pinfo = %{pinfo | :wrongs => pw}
+          Map.put(game, :wrongs, w)
+          |> Map.update(:players, %{}, &(Map.put(&1, player, pinfo)))
+          |> Map.update(:lastTurn, true, fn _ -> player end)
+      end
     end
   end
 

@@ -2,10 +2,15 @@ defmodule Memory.GameServer do
   use GenServer
 
   alias Memory.Game
+  require Logger
 
   ##Interface
   def start_link(_args) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
+  end
+
+  def join(game, user) do
+    GenServer.call(__MODULE__, {:join, game, user})
   end
 
   def view(game, user) do
@@ -39,17 +44,22 @@ defmodule Memory.GameServer do
     g = Map.get(state, game, Game.new)
     |> Game.guess(user, index1, index2)
     v = Game.client_preview(g, user, index1, index2)
+    Logger.debug("games:#{game}")
+    MemoryWeb.Endpoint.broadcast("games:#{game}", "new:msg", %{"game" => v, "action" => "guess"})
     {:reply, v, Map.put(state, game, g)}
   end
 
   def handle_call({:preview, game, user, index1}, _from, state) do
     g = Map.get(state, game, Game.new)
     v = Game.client_preview(g, user, index1, nil)
+    MemoryWeb.Endpoint.broadcast("games:#{game}", "new:msg", %{"game" => v, "action" => "preview"})
     {:reply, v, Map.put(state, game, g)}
   end
 
   def handle_call({:restart, game, user}, _from, state) do
     g = Game.new()
+    v = Game.client_view(g, user)
+    MemoryWeb.Endpoint.broadcast("games:#{game}", "new:msg", %{"game" => v, "action" => "restart"})
     {:reply, Game.client_view(g, user), Map.put(state, game, g)}
   end
 end

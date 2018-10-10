@@ -1,6 +1,8 @@
 defmodule MemoryWeb.PageController do
   use MemoryWeb, :controller
 
+  require Logger
+
   def index(conn, _params) do
     render conn, "index.html"
   end
@@ -20,6 +22,6 @@ defmodule MemoryWeb.PageController do
   def join(conn, %{"join" => %{"user" => user, "game" => game}}) do
     conn
     |> put_session(:user, user)
-    |> redirect(to: "/game/#{game}}")
+    |> redirect(to: "/game/#{game}")
   end
 end
