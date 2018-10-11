@@ -13,10 +13,11 @@ class Starter extends React.Component {
         this.state = {
             guessBoard: [],
             score: 0,
-            players: []
+            players: [],
+            winner: null,
+            nextTurn: null,
         };
         this.lastGuess = null;
-        this.wait = false;
         this.user = "";
 
         this.channel.join()
@@ -41,44 +42,42 @@ class Starter extends React.Component {
     }
 
     restart() {
-        this.wait = false;
         this.channel.push("restart")
             .receive("ok", this.gotView.bind(this));
-    }
-
-    makeGuess(view) {
-        this.gotView(view);
     }
 
     sleep(milliseconds) { return new Promise(resolve => setTimeout(resolve, milliseconds)) };
 
     clickTile(index) { //only bound to hidden tiles
-        if (this.wait) { return; }
+        if (this.user !== this.state.nextTurn) { return; }
         if (this.lastGuess === null) {
             this.lastGuess = index;
             this.channel.push("preview", {index1: index})
                 .receive("ok", this.gotView.bind(this));
         } else {
             this.channel.push("guess", {index1: this.lastGuess, index2: index})
-                .receive("ok", this.makeGuess.bind(this));
+                .receive("ok", this.gotView.bind(this));
             this.lastGuess = null;
         }
     }
 
     render() {
-        let score = <div className="score">{'Score: ' + this.state.score}</div>;
-        let restart = <div className="column" >
-            <p>
-                <button onClick={this.restart.bind(this)}>Restart</button>
-            </p>
-        </div>;
         let players = _.map(this.state.players, (player, i) => {
             return <div className="row" key={i}>
-                Player: {player.name}  Corrects: {player.corrects}  Wrongs: {player.wrongs}
+                {player.name}: {player.corrects}
             </div>
         });
-        console.log("here");
-        console.log(players);
+        let winner = "", restart = "", nextTurn = "";
+        if (this.state.winner) {
+            winner = <div className="row"><h1>{this.state.winner.corrects === 4 ? this.state.winner.name : this.state.winner.name + " wins!"}</h1></div>;
+            restart =
+                <a href="/">
+                    <div className="button">Quit</div>
+                </a>;
+        } else {
+            nextTurn = <div className="row" style={{fontWeight: 'bold'}}>Next turn: {this.state.nextTurn}</div>;
+        }
+
         let rows = [];
         for (let i = 0; i < this.state.guessBoard.length; i++) {
             if (i % 4 === 0) {
@@ -90,11 +89,10 @@ class Starter extends React.Component {
         return (
             <div >
                 {board}
-                <div className="row">
-                    {score}
-                    Current user: {this.user}
-                </div>
+                {winner}
+                {nextTurn}
                 {players}
+                <div className="row">Current user: {this.user}</div>
                 <div className="row">
                     {restart}
                 </div>
@@ -115,5 +113,4 @@ function Tile(props) {
             </div>
         );
     }
-
 }

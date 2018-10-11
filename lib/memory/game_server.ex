@@ -10,6 +10,7 @@ defmodule Memory.GameServer do
   end
 
   def join(game, user) do
+    Logger.debug "Join"
     GenServer.call(__MODULE__, {:join, game, user})
   end
 
@@ -35,6 +36,14 @@ defmodule Memory.GameServer do
     {:ok, state}
   end
 
+  def handle_call({:join, game, user}, _from, state) do
+    g = Map.get(state, game, Game.new)
+    |> Game.join(user)
+    v = Game.client_view(g, user)
+    MemoryWeb.Endpoint.broadcast("games:#{game}", "new:msg", %{"game" => v, "action" => "join"})
+    {:reply, v, Map.put(state, game, g)}
+  end
+
   def handle_call({:view, game, user}, _from, state) do
     g = Map.get(state, game, Game.new)
     {:reply, Game.client_view(g, user), Map.put(state, game, g)}
@@ -43,23 +52,30 @@ defmodule Memory.GameServer do
   def handle_call({:guess, game, user, index1, index2}, _from, state) do
     g = Map.get(state, game, Game.new)
     |> Game.guess(user, index1, index2)
-    v = Game.client_preview(g, user, index1, index2)
-    Logger.debug("games:#{game}")
-    MemoryWeb.Endpoint.broadcast("games:#{game}", "new:msg", %{"game" => v, "action" => "guess"})
-    {:reply, v, Map.put(state, game, g)}
+    if g != false do
+      v = Game.client_preview(g, user, index1, index2)
+      MemoryWeb.Endpoint.broadcast("games:#{game}", "new:msg", %{"game" => v, "action" => "guess"})
+      {:reply, v, Map.put(state, game, g)}
+    else
+      {:reply, Game.client_view(Map.get(state, game, Game.new), user), state}
+    end
   end
 
   def handle_call({:preview, game, user, index1}, _from, state) do
     g = Map.get(state, game, Game.new)
-    v = Game.client_preview(g, user, index1, nil)
-    MemoryWeb.Endpoint.broadcast("games:#{game}", "new:msg", %{"game" => v, "action" => "preview"})
-    {:reply, v, Map.put(state, game, g)}
+    v = Game.guess_preview(g, user, index1)
+    if v != false do
+      MemoryWeb.Endpoint.broadcast("games:#{game}", "new:msg", %{"game" => v, "action" => "preview"})
+      {:reply, v, Map.put(state, game, g)}
+    else
+      {:reply, Game.client_view(Map.get(state, game, Game.new), user), state}
+    end
   end
 
   def handle_call({:restart, game, user}, _from, state) do
-    g = Game.new()
+    g = Game.restart(game, user)
     v = Game.client_view(g, user)
     MemoryWeb.Endpoint.broadcast("games:#{game}", "new:msg", %{"game" => v, "action" => "restart"})
-    {:reply, Game.client_view(g, user), Map.put(state, game, g)}
+    {:reply, v, Map.put(state, game, g)}
   end
 end
