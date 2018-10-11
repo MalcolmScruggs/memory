@@ -2,7 +2,7 @@ server {
     listen 80;
     listen [::]:80;
 
-    server_name hw04.malcolmscruggs.com www.hw04.malcolmscruggs.com;
+    server_name hw05.malcolmscruggs.com www.hw05.malcolmscruggs.com;
 
     location / {
         proxy_pass http://localhost:4793;
