@@ -1,4 +1,8 @@
 # Memory
+Memory Game with Different implementations (by branch)
+Master: Browser side implementation with React
+Server-Side: Server implementation with state managed by server with Elixir/Phoenix & React
+Two-Player: Server implementation supporting two player games with Elixir/Phoenix & React
 
 To start your Phoenix server:
 
