@@ -4,6 +4,9 @@ Memory Game with Different implementations (by branch)
 * Server-Side: Server implementation with state managed by server with Elixir/Phoenix & React
 * Two-Player: Server implementation supporting two player games with Elixir/Phoenix & React
 
+Client-Side Implementation: http://memory1.malcolmscruggs.com/
+Server-Side State: http://hw04.malcolmscruggs.com/
+Multiplater: http://hw05.malcolmscruggs.com/
 
 ### Phoenix Information
 To start your Phoenix server:
@@ -23,3 +26,4 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Docs: https://hexdocs.pm/phoenix
   * Mailing list: http://groups.google.com/group/phoenix-talk
   * Source: https://github.com/phoenixframework/phoenix
+
