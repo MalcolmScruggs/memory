@@ -5,7 +5,11 @@ Memory Game with Different implementations (by branch)
 * Two-Player: Server implementation supporting two player games with Elixir/Phoenix & React
 
 Client-Side Implementation: http://memory1.malcolmscruggs.com/
+
+
 Server-Side State: http://hw04.malcolmscruggs.com/
+
+
 Multiplater: http://hw05.malcolmscruggs.com/
 
 ### Phoenix Information
